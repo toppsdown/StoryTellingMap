@@ -3,7 +3,7 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="2040.5px" height="1178.5px" viewBox="0 0 2040.5 1178.5" enable-background="new 0 0 2040.5 1178.5" xml:space="preserve">
-<g>
+<g id="base-map">
 	<path fill="#FDFCEC" d="M422.985-53.964"/>
 	<polygon fill="#FDFCEC" points="414.48,-43.219 412.818,-46.127 415.003,-46.457 	"/>
 	<polygon fill="#FDFCEC" points="397.803,-42.218 396.186,-43.237 396.504,-45.302 398.664,-45.758 398.877,-42.887 	"/>
@@ -803,7 +803,7 @@
 		776.087,-22.985 774.352,-16.603 776.905,-1.831 774.467,11.194 773.19,18.041 774.325,26.917 778.167,30.203 778.528,35.695
 		781.392,39.479 780.741,42.33 783.044,46.419 787.617,54.539 787.93,60.662 796.6,78.552 797.003,90.838 797.691,101.046 	"/>
 </g>
-<g>
+<g id="non-trail-points">
 	<text transform="matrix(1 0 0 1 593.0767 771.5918)" fill="#939598" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-weight='bold' font-size="5.1197">Kleifarvatn</text>
 	<text transform="matrix(1 0 0 1 506.8916 793.6055)" fill="#939598" font-family="'Helvetica Neue',Helvetica,Arial,sans-serif" font-weight='bold' font-size="5.1197">Seltún Geothermal Area</text>
 	<circle fill="#A8AAAD" cx="588.39" cy="773.176" r="2.979"/>
