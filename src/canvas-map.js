@@ -313,11 +313,15 @@ const CanvasMap=(props)=>{
     },
     onScroll(){
       let scroll=getScroll()
+
+      // d and t are calculations of animation speed
       let t=0
       let d=Math.abs(scroll-this.lastScroll)
       d=Math.sqrt(clamp(d/10))
       this.lastScroll=scroll
       t=d*0.2
+
+      // https://greensock.com/docs/v2/TweenLite/static.to()
       TweenLite.to(this.scrollAnim,t,{
         value:scroll,
         onUpdate:()=>{
