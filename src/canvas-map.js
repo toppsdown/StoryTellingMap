@@ -230,6 +230,8 @@ const CanvasMap=(props)=>{
             let mapCtx=map.getContext('2d',{alpha:false})
             mapCtx.fillStyle='white'
             mapCtx.fillRect(0,0,this.mapWidth*scale,this.mapHeight*scale)
+
+            // Here is where the SVG map get's drawn
             mapCtx.drawImage(img,0,0,this.mapWidth*scale,this.mapHeight*scale)
             return {map,scale}
           })
