@@ -431,7 +431,7 @@ Place this code in the empty space below.
        style="fill:none;stroke:#a9a9a9;stroke-width:0.52916664" />
   </g>
   <g
-     style="display:inline"
+     style="display:none"
      id="points_of_interest">
     <circle
        style="stroke-width:0.26458332"
@@ -451,5 +451,5 @@ Place this code in the empty space below.
   <path
      id="path4110"
      d="m 37.338266,115.45893 c 0,0 36.327901,-26.428439 65.560504,-24.089829"
-     style="display:inline;fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+     style="display:none;fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
 </svg>
