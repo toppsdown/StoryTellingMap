@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+  <!-- <img src="./Denver_trip_stripped.svg"> -->
+  <canvas id="canvas" width="800" height="800"></canvas>
+
+  <script type="text/javascript">
+    var ctx = document.getElementById('canvas').getContext('2d');
+    let img = new Image();
+    img.addEventListener('load', function() {
+      ctx.drawImage(img, 0, 0)
+    }, false);
+
+    img.src = './Denver_trip_stripped.svg'
+
+
+
+  </script>
+</body>
+</html>
