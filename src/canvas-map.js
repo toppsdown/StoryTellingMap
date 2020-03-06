@@ -223,7 +223,15 @@ const CanvasMap=(props)=>{
             this.mapWidth=2040
             this.mapHeight=1178
           }
+          // This is generating multiple map renders at different scales
           this.map=arrayNum(this.mapScales).map((v,i)=>{
+            // Map scale calculation
+            // arrayNum creates an array with x number (2) of slots
+            // for each slot in the array, (1.5/1) * 0,1 + 1
+            // maxScale = 2.5
+            // mapScales = 2
+            // Output: [1, 2.5].
+            // this is horribly convoluted, why even bother?
             let scale=1+(((this.mapMaxScale-1)/(this.mapScales-1))*i)
 
             let map=createCanvas(this.mapWidth*scale,this.mapHeight*scale)
@@ -236,8 +244,11 @@ const CanvasMap=(props)=>{
             return {map,scale}
           })
 
+          // Create a 1x1 canvas
           this.mapBuffer=createCanvas(1,1)
           this.mapBufferCtx=this.mapBuffer.getContext('2d',{alpha:false})
+          // update the map to match the height and width in state
+          // height and width are set by the window size
           this.updateMapBufferSize()
           this.mapBufferCtx.fillStyle='white'
           this.mapBufferCtx.fillRect(0,0,this.mapBufferSize.x,this.mapBufferSize.y)
@@ -679,6 +690,7 @@ const CanvasMap=(props)=>{
         this.ctx.restore()
       }
       let checkForBufferUpdate=()=>{
+        //
         let zoomDelta=Math.abs(zoom-this.mapBufferLast.zoom)
         let dx=Math.abs(mapSlice.x-this.mapBufferLast.pos.x)
         let dy=Math.abs(mapSlice.y-this.mapBufferLast.pos.y)
