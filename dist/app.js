@@ -56,7 +56,8 @@
 
 	var map = (0, _canvasMap2.default)({
 	  textContainer: document.querySelector('.text'),
-	  mapSrc: 'img/map.svg',
+	  // mapSrc:'img/map.svg',
+	  mapSrc: '../mymaps/svgs/denver_trip_working.svg',
 	  trailVisitedColor: '#47DBB4',
 	  fontPresentColor: '#5D5C56'
 	}).appendTo('.container');
@@ -9620,6 +9621,8 @@
 	            var mapCtx = map.getContext('2d', { alpha: false });
 	            mapCtx.fillStyle = 'white';
 	            mapCtx.fillRect(0, 0, _this.mapWidth * scale, _this.mapHeight * scale);
+
+	            // Here is where the SVG map get's drawn
 	            mapCtx.drawImage(img, 0, 0, _this.mapWidth * scale, _this.mapHeight * scale);
 	            return { map: map, scale: scale };
 	          });
@@ -9709,11 +9712,15 @@
 	      var _this3 = this;
 
 	      var scroll = getScroll();
+
+	      // d and t are calculations of animation speed
 	      var t = 0;
 	      var d = Math.abs(scroll - this.lastScroll);
 	      d = Math.sqrt((0, _math.clamp)(d / 10));
 	      this.lastScroll = scroll;
 	      t = d * 0.2;
+
+	      // https://greensock.com/docs/v2/TweenLite/static.to()
 	      _gsap2.default.to(this.scrollAnim, t, {
 	        value: scroll,
 	        onUpdate: function onUpdate() {
@@ -10360,33 +10367,49 @@
 	  var d = (0, _vector.sub)(pointA, pointB);
 	  return Math.sqrt(d.x * d.x + d.y * d.y);
 	}
+	// This tries to find the point along the path that is closest to
+	// the point we're asking about.  It accomplishes this by dividing the
+	// path into 10 subdivisions, finding the closest subdivision, and then
+	// repeating with that subdivision 5 times
 	function getLengthAtPoint(path, point) {
 	  var subdivisionsPerIteration = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
 	  var iterations = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
 
 	  var pathLength = getLength(path);
 
+	  // call is down below, starts at beginning and ending of path
 	  return function iterate(lower, upper) {
+	    // get the length of the path between points
 	    var delta = upper - lower;
+	    // calculate the size of each subdivision
 	    var step = delta / (subdivisionsPerIteration - 1);
 
+	    // split the path into x pieces in an array
 	    var subdivisions = Array.from(Array(subdivisionsPerIteration)).map(function (v, i) {
 	      var subLength = lower + step * i;
 	      var subPoint = getPointAtLength(path, subLength);
 	      var subDistance = distance(point, subPoint);
+
+	      // get the length of this piece, the point it starts at
+	      // and the straitline distance from that that start point to
+	      // the point we're calculating
 	      return {
 	        length: subLength,
 	        point: subPoint,
 	        distance: subDistance
 	      };
-	    }).sort(function (a, b) {
+	    })
+	    // find the subDivision with the smallest distance
+	    .sort(function (a, b) {
 	      return a.distance - b.distance;
 	    }).map(function (v) {
 	      return v.length;
 	    }).slice(0, 2);
 
+	    // reduce iteration and return when it's 0
 	    if (! --iterations) return subdivisions[0];
 
+	    // repeat the subdividing process with the new subdivision
 	    return iterate.apply(undefined, _toConsumableArray(subdivisions.sort(function (a, b) {
 	      return a - b;
 	    })));
