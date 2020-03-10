@@ -9614,7 +9614,15 @@
 	            _this.mapWidth = 2040;
 	            _this.mapHeight = 1178;
 	          }
+	          // This is generating multiple map renders at different scales
 	          _this.map = arrayNum(_this.mapScales).map(function (v, i) {
+	            // Map scale calculation
+	            // arrayNum creates an array with x number (2) of slots
+	            // for each slot in the array, (1.5/1) * 0,1 + 1
+	            // maxScale = 2.5
+	            // mapScales = 2
+	            // Output: [1, 2.5].
+	            // this is horribly convoluted, why even bother?
 	            var scale = 1 + (_this.mapMaxScale - 1) / (_this.mapScales - 1) * i;
 
 	            var map = (0, _createCanvas2.default)(_this.mapWidth * scale, _this.mapHeight * scale);
@@ -9627,8 +9635,11 @@
 	            return { map: map, scale: scale };
 	          });
 
+	          // Create a 1x1 canvas
 	          _this.mapBuffer = (0, _createCanvas2.default)(1, 1);
 	          _this.mapBufferCtx = _this.mapBuffer.getContext('2d', { alpha: false });
+	          // update the map to match the height and width in state
+	          // height and width are set by the window size
 	          _this.updateMapBufferSize();
 	          _this.mapBufferCtx.fillStyle = 'white';
 	          _this.mapBufferCtx.fillRect(0, 0, _this.mapBufferSize.x, _this.mapBufferSize.y);
@@ -10045,6 +10056,7 @@
 	        _this4.ctx.restore();
 	      };
 	      var checkForBufferUpdate = function checkForBufferUpdate() {
+	        //
 	        var zoomDelta = Math.abs(zoom - _this4.mapBufferLast.zoom);
 	        var dx = Math.abs(mapSlice.x - _this4.mapBufferLast.pos.x);
 	        var dy = Math.abs(mapSlice.y - _this4.mapBufferLast.pos.y);
