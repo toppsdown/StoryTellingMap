@@ -9570,9 +9570,10 @@
 	        });
 	      });
 
-	      this.scrollAnim = { value: 0 };
+	      this.scrollAnim = { value: 0
 
-	      (0, _ajax2.default)(this.props.mapSrc).then(function (response) {
+	        // When SVG loads, pull out the top level SVG node
+	      };(0, _ajax2.default)(this.props.mapSrc).then(function (response) {
 	        _this.mapSVG = Array.from(new DOMParser().parseFromString(response, 'image/svg+xml').childNodes).filter(function (node) {
 	          var tag = node.tagName;
 	          if (typeof tag == 'undefined') return false;
@@ -10056,17 +10057,32 @@
 	        _this4.ctx.restore();
 	      };
 	      var checkForBufferUpdate = function checkForBufferUpdate() {
-	        //
+	        // get the change in zoom
 	        var zoomDelta = Math.abs(zoom - _this4.mapBufferLast.zoom);
+
+	        // get the change in coordinates for the map post camera position change
 	        var dx = Math.abs(mapSlice.x - _this4.mapBufferLast.pos.x);
 	        var dy = Math.abs(mapSlice.y - _this4.mapBufferLast.pos.y);
 	        var mapIndex = 0;
+
+	        // Go through all the prerendered scales to find the best one for this
+	        // zoom level
 	        while (zoom > _this4.map[mapIndex].scale && mapIndex < _this4.map.length - 1) {
 	          mapIndex++;
 	        }
 	        var optimalScale = _this4.map[mapIndex].scale;
 
-	        if (dx < _this4.mapBufferMargin / 3 && dy < _this4.mapBufferMargin / 3 && zoomDelta < 1 && !(zoom == optimalScale && _this4.mapBufferLast.zoom != optimalScale)) return;
+	        // Don't rerender buffer if:
+	        // - we haven't moved outside the buffer margin (400px)
+	        // - We havn't zoomed in too much
+	        // - current zoom is not the optimal scale OR
+	        // - previous buffer is the optimal scale (this one seems weird)
+	        if (dx < _this4.mapBufferMargin / 3 && dy < _this4.mapBufferMargin / 3 &&
+
+	        // This latter case only seems to happen once, when there's a major zoom in
+	        zoomDelta < 1 && !(zoom == optimalScale)) {
+	          return;
+	        }
 
 	        _this4.mapBufferLast = {
 	          zoom: zoom,

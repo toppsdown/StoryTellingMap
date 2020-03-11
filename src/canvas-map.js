@@ -177,6 +177,7 @@ const CanvasMap=(props)=>{
 
       this.scrollAnim={value:0}
 
+      // When SVG loads, pull out the top level SVG node
       get(this.props.mapSrc).then((response)=>{
         this.mapSVG=Array.from(
             new DOMParser()
@@ -690,18 +691,34 @@ const CanvasMap=(props)=>{
         this.ctx.restore()
       }
       let checkForBufferUpdate=()=>{
-        //
+        // get the change in zoom
         let zoomDelta=Math.abs(zoom-this.mapBufferLast.zoom)
+
+        // get the change in coordinates for the map post camera position change
         let dx=Math.abs(mapSlice.x-this.mapBufferLast.pos.x)
         let dy=Math.abs(mapSlice.y-this.mapBufferLast.pos.y)
         let mapIndex=0
+
+        // Go through all the prerendered scales to find the best one for this
+        // zoom level
         while(zoom>this.map[mapIndex].scale && mapIndex<this.map.length-1){
           mapIndex++
         }
         let optimalScale=this.map[mapIndex].scale
 
+        // Don't rerender buffer if:
+        // - we haven't moved outside the buffer margin (400px)
+        // - We havn't zoomed in too much
+        // - current zoom is not the optimal scale OR
+        // - previous buffer is the optimal scale (this one seems weird)
+        if(dx < this.mapBufferMargin/3 &&
+           dy < this.mapBufferMargin/3 &&
 
-        if(dx < this.mapBufferMargin/3 && dy < this.mapBufferMargin/3 && zoomDelta<1 && !(zoom==optimalScale && this.mapBufferLast.zoom!=optimalScale)) return
+           // This latter case only seems to happen once, when there's a major zoom in
+           zoomDelta<1 &&
+           !(zoom==optimalScale)) {
+          return
+        }
 
         this.mapBufferLast={
           zoom,
