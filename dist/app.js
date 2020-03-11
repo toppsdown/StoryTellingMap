@@ -9447,13 +9447,6 @@
 	    mapScales: 2,
 	    mapMaxScale: 2.5,
 	    mapCache: null,
-	    mapBuffer: null,
-	    mapBufferCtx: null,
-	    mapBufferScale: 0,
-	    mapBufferSize: { x: 2048, y: 2048 },
-	    mapBufferMargin: 400,
-	    mapBufferOffset: null,
-	    mapBufferLast: null,
 	    mapSVG: null,
 	    mapWidth: null,
 	    mapHeight: null,
@@ -9636,17 +9629,6 @@
 	            return { map: map, scale: scale };
 	          });
 
-	          // Create a 1x1 canvas
-	          _this.mapBuffer = (0, _createCanvas2.default)(1, 1);
-	          _this.mapBufferCtx = _this.mapBuffer.getContext('2d', { alpha: false });
-	          // update the map buffer to match the height and width in state
-	          // height and width are set by the window size
-	          _this.updateMapBufferSize();
-	          _this.mapBufferCtx.fillStyle = 'white';
-	          _this.mapBufferCtx.fillRect(0, 0, _this.mapBufferSize.x, _this.mapBufferSize.y);
-	          _this.mapBufferOffset = { x: 0, y: 0 };
-	          _this.mapBufferScale = _this.mapScale;
-
 	          _this.ready = true;
 	          document.addEventListener('scroll', _this.onScroll.bind(_this));
 	          _this.onScroll();
@@ -9664,23 +9646,6 @@
 	      }).reduce(function (flattened, cur) {
 	        return flattened.concat(cur);
 	      }, []);
-	    },
-	    getMapBufferSize: function getMapBufferSize() {
-	      return {
-	        x: this.state.width + this.mapBufferMargin * 2,
-	        y: this.state.height + this.mapBufferMargin * 2
-	      };
-	    },
-	    updateMapBufferSize: function updateMapBufferSize() {
-	      this.mapBufferSize = this.getMapBufferSize();
-
-	      this.mapBuffer.setAttribute('width', this.mapBufferSize.x);
-	      this.mapBuffer.setAttribute('height', this.mapBufferSize.y);
-
-	      this.mapBufferLast = {
-	        zoom: -1,
-	        pos: { x: -1, y: -1 }
-	      };
 	    },
 	    calculateSections: function calculateSections() {
 	      var scroll = getScroll();
@@ -9784,7 +9749,6 @@
 	        width: window.innerWidth,
 	        height: window.innerHeight
 	      };
-	      this.updateMapBufferSize();
 	      this.canvas.width = this.state.width;
 	      this.canvas.height = this.state.height;
 	      this.calculateSections();
@@ -9792,21 +9756,6 @@
 	    },
 	    getZoom: function getZoom() {
 	      return this.getZoomAtPercent(this.state.pos);
-	    },
-	    drawMapBuffer: function drawMapBuffer(ctx, pos, zoom) {
-	      ctx.fillStyle = 'white';
-	      ctx.fillRect(0, 0, this.mapBufferSize.x, this.mapBufferSize.y);
-	      var mapIndex = 0;
-	      while (zoom > this.map[mapIndex].scale && mapIndex < this.map.length - 1) {
-	        mapIndex++;
-	      }
-	      var map = this.map[mapIndex];
-
-	      var offset = (0, _vector.sub)((0, _vector.mult)(pos, map.scale), this.mapBufferMargin);
-	      var scale = map.scale / zoom;
-
-	      drawCanvasSlice(ctx, map.map, Object.assign({}, offset, { width: this.mapBufferSize.x * scale, height: this.mapBufferSize.y * scale }), { x: 0, y: 0, width: this.mapBufferSize.x, height: this.mapBufferSize.y });
-	      return { offset: offset, scale: scale, mapScale: map.scale };
 	    },
 	    getCameraPosAtPercent: function getCameraPosAtPercent(percent) {
 	      return Path.getPointAtPercent(this.cameraSubdivisions, percent);
@@ -9820,7 +9769,7 @@
 	          width = _ref2[0],
 	          height = _ref2[1];
 
-	      console.log('height: ' + this.state.height);
+
 	      return {
 	        x: width * centerRatio.x,
 	        y: height * centerRatio.y
@@ -10071,80 +10020,11 @@
 	        _this4.ctx.drawImage(icon, -iconCenter.x, -iconCenter.y);
 	        _this4.ctx.restore();
 	      };
-	      var checkForBufferUpdate = function checkForBufferUpdate() {
-	        // get the change in zoom
-	        var zoomDelta = Math.abs(zoom - _this4.mapBufferLast.zoom);
 
-	        // get the change in coordinates for the map post camera position change
-	        var dx = Math.abs(mapSlice.x - _this4.mapBufferLast.pos.x);
-	        var dy = Math.abs(mapSlice.y - _this4.mapBufferLast.pos.y);
-	        var mapIndex = 0;
-
-	        // Go through all the prerendered scales to find the best one for this
-	        // zoom level
-	        while (zoom > _this4.map[mapIndex].scale && mapIndex < _this4.map.length - 1) {
-	          mapIndex++;
-	        }
-	        var optimalScale = _this4.map[mapIndex].scale;
-
-	        // Don't rerender buffer if:
-	        // - we haven't moved outside the buffer margin (400px)
-	        // - We havn't zoomed in too much
-	        // - current zoom is not the optimal scale OR
-	        // - previous buffer is the optimal scale (this one seems weird)
-	        if (dx < _this4.mapBufferMargin / 3 && dy < _this4.mapBufferMargin / 3 &&
-
-	        // This latter case only seems to happen once, when there's a major zoom in
-	        zoomDelta < 1 && !(zoom == optimalScale)) {
-	          return;
-	        }
-
-	        _this4.mapBufferLast = {
-	          zoom: zoom,
-	          pos: { x: mapSlice.x, y: mapSlice.y }
-	        };
-	        updateMapBuffer();
-	      };
-
-	      var updatedBufferThisFrame = false;
-	      var updateMapBuffer = function updateMapBuffer() {
-	        updatedBufferThisFrame = true;
-	        var buffer = _this4.drawMapBuffer(_this4.mapBufferCtx, mapSlice, zoom);
-	        _this4.mapBufferScale = buffer.scale;
-	        _this4.mapBufferOffset = buffer.offset;
-	        _this4.mapScale = buffer.mapScale;
-	      };
 	      var drawMap = function drawMap() {
-	        // debugger
 	        var center = _this4.getCenterCoordinates();
 	        var img = _this4.map[0].map;
 	        _this4.ctx.drawImage(img, center.x, center.y);
-
-	        // this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
-
-	        // checkForBufferUpdate()
-
-	        // if(!updatedBufferThisFrame){
-	        //   let slice={
-	        //     x:((mapSlice.x*this.mapScale)-this.mapBufferOffset.x)/this.mapBufferScale,
-	        //     y:((mapSlice.y*this.mapScale)-this.mapBufferOffset.y)/this.mapBufferScale,
-	        //     width:(mapSlice.width*this.mapScale)/this.mapBufferScale,
-	        //     height:(mapSlice.height*this.mapScale)/this.mapBufferScale
-	        //   }
-	        //   let target={
-	        //     x:0,y:0,
-	        //     width:this.state.width,
-	        //     height:this.state.height,
-	        //   }
-	        //   drawCanvasSlice(
-	        //     this.ctx,
-	        //     this.mapBuffer,
-	        //     slice,
-	        //     target
-	        //   )
-	        // }else{
-	        //   this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
-	        // }
 	      };
 
 	      var localToGlobal = function localToGlobal(v) {

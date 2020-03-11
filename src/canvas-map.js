@@ -52,13 +52,6 @@ const CanvasMap=(props)=>{
     mapScales:2,
     mapMaxScale:2.5,
     mapCache:null,
-    mapBuffer:null,
-    mapBufferCtx:null,
-    mapBufferScale:0,
-    mapBufferSize:{x:2048,y:2048},
-    mapBufferMargin:400,
-    mapBufferOffset:null,
-    mapBufferLast:null,
     mapSVG:null,
     mapWidth:null,
     mapHeight:null,
@@ -245,17 +238,6 @@ const CanvasMap=(props)=>{
             return {map,scale}
           })
 
-          // Create a 1x1 canvas
-          this.mapBuffer=createCanvas(1,1)
-          this.mapBufferCtx=this.mapBuffer.getContext('2d',{alpha:false})
-          // update the map buffer to match the height and width in state
-          // height and width are set by the window size
-          this.updateMapBufferSize()
-          this.mapBufferCtx.fillStyle='white'
-          this.mapBufferCtx.fillRect(0,0,this.mapBufferSize.x,this.mapBufferSize.y)
-          this.mapBufferOffset={x:0,y:0}
-          this.mapBufferScale=this.mapScale
-
           this.ready=true
           document.addEventListener('scroll',this.onScroll.bind(this))
           this.onScroll()
@@ -269,23 +251,6 @@ const CanvasMap=(props)=>{
           this.sections[i].getAttribute('data-stay')=='true'?[point,point]:[point]
         )
         .reduce((flattened,cur)=>flattened.concat(cur),[])
-    },
-    getMapBufferSize(){
-      return {
-        x:this.state.width+(this.mapBufferMargin*2),
-        y:this.state.height+(this.mapBufferMargin*2)
-      }
-    },
-    updateMapBufferSize(){
-      this.mapBufferSize=this.getMapBufferSize()
-
-      this.mapBuffer.setAttribute('width',this.mapBufferSize.x)
-      this.mapBuffer.setAttribute('height',this.mapBufferSize.y)
-
-      this.mapBufferLast={
-        zoom:-1,
-        pos:{x:-1,y:-1}
-      }
     },
     calculateSections(){
       let scroll=getScroll()
@@ -390,7 +355,6 @@ const CanvasMap=(props)=>{
         width:window.innerWidth,
         height:window.innerHeight,
       }
-      this.updateMapBufferSize()
       this.canvas.width=this.state.width
       this.canvas.height=this.state.height
       this.calculateSections()
@@ -398,25 +362,6 @@ const CanvasMap=(props)=>{
     },
     getZoom(){
       return this.getZoomAtPercent(this.state.pos)
-    },
-    drawMapBuffer(ctx,pos,zoom){
-      ctx.fillStyle='white'
-      ctx.fillRect(0,0,this.mapBufferSize.x,this.mapBufferSize.y)
-      let mapIndex=0
-      while(zoom>this.map[mapIndex].scale && mapIndex<this.map.length-1){
-        mapIndex++
-      }
-      let map=this.map[mapIndex]
-
-      let offset=sub(mult(pos,map.scale),this.mapBufferMargin)
-      let scale=map.scale/zoom
-
-      drawCanvasSlice(
-        ctx, map.map,
-        Object.assign({},offset,{width:this.mapBufferSize.x*scale, height:this.mapBufferSize.y*scale}),
-        {x:0,y:0,width:this.mapBufferSize.x,height:this.mapBufferSize.y}
-      )
-      return {offset,scale,mapScale:map.scale}
     },
     getCameraPosAtPercent(percent){
       return Path.getPointAtPercent(
@@ -433,7 +378,7 @@ const CanvasMap=(props)=>{
         this.state.width,
         this.state.height
       ]
-      console.log('height: ' + this.state.height)
+
       return {
         x: (width*centerRatio.x),
         y: (height*centerRatio.y),
@@ -705,82 +650,11 @@ const CanvasMap=(props)=>{
         )
         this.ctx.restore()
       }
-      let checkForBufferUpdate=()=>{
-        // get the change in zoom
-        let zoomDelta=Math.abs(zoom-this.mapBufferLast.zoom)
 
-        // get the change in coordinates for the map post camera position change
-        let dx=Math.abs(mapSlice.x-this.mapBufferLast.pos.x)
-        let dy=Math.abs(mapSlice.y-this.mapBufferLast.pos.y)
-        let mapIndex=0
-
-        // Go through all the prerendered scales to find the best one for this
-        // zoom level
-        while(zoom>this.map[mapIndex].scale && mapIndex<this.map.length-1){
-          mapIndex++
-        }
-        let optimalScale=this.map[mapIndex].scale
-
-        // Don't rerender buffer if:
-        // - we haven't moved outside the buffer margin (400px)
-        // - We havn't zoomed in too much
-        // - current zoom is not the optimal scale OR
-        // - previous buffer is the optimal scale (this one seems weird)
-        if(dx < this.mapBufferMargin/3 &&
-           dy < this.mapBufferMargin/3 &&
-
-           // This latter case only seems to happen once, when there's a major zoom in
-           zoomDelta<1 &&
-           !(zoom==optimalScale)) {
-          return
-        }
-
-        this.mapBufferLast={
-          zoom,
-          pos: {x:mapSlice.x, y:mapSlice.y}
-        }
-        updateMapBuffer()
-      }
-
-      let updatedBufferThisFrame=false
-      let updateMapBuffer=()=>{
-        updatedBufferThisFrame=true
-        let buffer=this.drawMapBuffer(this.mapBufferCtx,mapSlice,zoom)
-        this.mapBufferScale=buffer.scale
-        this.mapBufferOffset=buffer.offset
-        this.mapScale=buffer.mapScale
-      }
       let drawMap=()=>{
-        // debugger
         let center = this.getCenterCoordinates()
         let img=this.map[0].map
         this.ctx.drawImage(img,center.x,center.y)
-
-        // this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
-
-        // checkForBufferUpdate()
-
-        // if(!updatedBufferThisFrame){
-        //   let slice={
-        //     x:((mapSlice.x*this.mapScale)-this.mapBufferOffset.x)/this.mapBufferScale,
-        //     y:((mapSlice.y*this.mapScale)-this.mapBufferOffset.y)/this.mapBufferScale,
-        //     width:(mapSlice.width*this.mapScale)/this.mapBufferScale,
-        //     height:(mapSlice.height*this.mapScale)/this.mapBufferScale
-        //   }
-        //   let target={
-        //     x:0,y:0,
-        //     width:this.state.width,
-        //     height:this.state.height,
-        //   }
-        //   drawCanvasSlice(
-        //     this.ctx,
-        //     this.mapBuffer,
-        //     slice,
-        //     target
-        //   )
-        // }else{
-        //   this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
-        // }
       }
 
       let localToGlobal=(v)=>
