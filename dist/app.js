@@ -9418,22 +9418,6 @@
 	  if (!worked && fallback != null) ctx.globalCompositeOperation = fallback;
 	  return worked;
 	};
-	var drawCanvasSlice = function drawCanvasSlice(ctx, img, slice, target) {
-	  var sliceScale = {
-	    x: img.width / slice.width,
-	    y: img.height / slice.height
-	  };
-	  var targetSize = {
-	    width: target.width * sliceScale.x,
-	    height: target.height * sliceScale.y
-	  };
-	  var targetScale = {
-	    x: targetSize.width / img.width,
-	    y: targetSize.height / img.height
-	  };
-
-	  ctx.drawImage(img, Math.round(-slice.x * targetScale.x), Math.round(-slice.y * targetScale.y), Math.round(targetSize.width), Math.round(targetSize.height));
-	};
 
 	var CanvasMap = function CanvasMap(props) {
 	  var object = {

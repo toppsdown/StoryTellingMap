@@ -17,28 +17,6 @@ let setCompositeOperation=(ctx, mode='source-over', fallback=null) => {
     ctx.globalCompositeOperation=fallback
   return worked
 }
-let drawCanvasSlice=(ctx, img, slice, target)=>{
-  let sliceScale={
-    x:img.width/slice.width,
-    y:img.height/slice.height,
-  }
-  let targetSize={
-    width:target.width*sliceScale.x,
-    height:target.height*sliceScale.y
-  }
-  let targetScale={
-    x:targetSize.width/img.width,
-    y:targetSize.height/img.height
-  }
-
-  ctx.drawImage(
-    img,
-    Math.round(-slice.x*targetScale.x),
-    Math.round(-slice.y*targetScale.y),
-    Math.round(targetSize.width),
-    Math.round(targetSize.height)
-  )
-}
 
 const CanvasMap=(props)=>{
   let object={
