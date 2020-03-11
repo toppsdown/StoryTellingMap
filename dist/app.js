@@ -9639,7 +9639,7 @@
 	          // Create a 1x1 canvas
 	          _this.mapBuffer = (0, _createCanvas2.default)(1, 1);
 	          _this.mapBufferCtx = _this.mapBuffer.getContext('2d', { alpha: false });
-	          // update the map to match the height and width in state
+	          // update the map buffer to match the height and width in state
 	          // height and width are set by the window size
 	          _this.updateMapBufferSize();
 	          _this.mapBufferCtx.fillStyle = 'white';
@@ -9810,6 +9810,21 @@
 	    },
 	    getCameraPosAtPercent: function getCameraPosAtPercent(percent) {
 	      return Path.getPointAtPercent(this.cameraSubdivisions, percent);
+	    },
+	    getCenterCoordinates: function getCenterCoordinates() {
+	      var centerRatio = {
+	        x: this.state.width > 720 ? 0.66 : 0.5,
+	        y: 0.1
+	      };
+	      var _ref2 = [this.state.width, this.state.height],
+	          width = _ref2[0],
+	          height = _ref2[1];
+
+	      console.log('height: ' + this.state.height);
+	      return {
+	        x: width * centerRatio.x,
+	        y: height * centerRatio.y
+	      };
 	    },
 	    getMapSliceAtPercent: function getMapSliceAtPercent(percent) {
 	      //quick fix bug #20
@@ -10100,24 +10115,36 @@
 	        _this4.mapScale = buffer.mapScale;
 	      };
 	      var drawMap = function drawMap() {
-	        checkForBufferUpdate();
+	        // debugger
+	        var center = _this4.getCenterCoordinates();
+	        var img = _this4.map[0].map;
+	        _this4.ctx.drawImage(img, center.x, center.y);
 
-	        if (!updatedBufferThisFrame) {
-	          var slice = {
-	            x: (mapSlice.x * _this4.mapScale - _this4.mapBufferOffset.x) / _this4.mapBufferScale,
-	            y: (mapSlice.y * _this4.mapScale - _this4.mapBufferOffset.y) / _this4.mapBufferScale,
-	            width: mapSlice.width * _this4.mapScale / _this4.mapBufferScale,
-	            height: mapSlice.height * _this4.mapScale / _this4.mapBufferScale
-	          };
-	          var target = {
-	            x: 0, y: 0,
-	            width: _this4.state.width,
-	            height: _this4.state.height
-	          };
-	          drawCanvasSlice(_this4.ctx, _this4.mapBuffer, slice, target);
-	        } else {
-	          _this4.ctx.drawImage(_this4.mapBuffer, Math.round(-_this4.mapBufferMargin / _this4.mapBufferScale), Math.round(-_this4.mapBufferMargin / _this4.mapBufferScale));
-	        }
+	        // this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
+
+	        // checkForBufferUpdate()
+
+	        // if(!updatedBufferThisFrame){
+	        //   let slice={
+	        //     x:((mapSlice.x*this.mapScale)-this.mapBufferOffset.x)/this.mapBufferScale,
+	        //     y:((mapSlice.y*this.mapScale)-this.mapBufferOffset.y)/this.mapBufferScale,
+	        //     width:(mapSlice.width*this.mapScale)/this.mapBufferScale,
+	        //     height:(mapSlice.height*this.mapScale)/this.mapBufferScale
+	        //   }
+	        //   let target={
+	        //     x:0,y:0,
+	        //     width:this.state.width,
+	        //     height:this.state.height,
+	        //   }
+	        //   drawCanvasSlice(
+	        //     this.ctx,
+	        //     this.mapBuffer,
+	        //     slice,
+	        //     target
+	        //   )
+	        // }else{
+	        //   this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
+	        // }
 	      };
 
 	      var localToGlobal = function localToGlobal(v) {
@@ -10146,8 +10173,15 @@
 
 	      var dpi = 1; //window.devicePixelRatio
 
+	      // let canvasPos=(x,y)=>typeof x=='object'?
+	      //   canvasPos(x.x,x.y):[
+	      //     (x-mapSlice.x)*zoom,
+	      //     (y-mapSlice.y)*zoom
+	      //   ]
+
+	      var center = this.getCenterCoordinates();
 	      var canvasPos = function canvasPos(x, y) {
-	        return (typeof x === 'undefined' ? 'undefined' : _typeof(x)) == 'object' ? canvasPos(x.x, x.y) : [(x - mapSlice.x) * zoom, (y - mapSlice.y) * zoom];
+	        return (typeof x === 'undefined' ? 'undefined' : _typeof(x)) == 'object' ? canvasPos(x.x, x.y) : [x + center.x, y + center.y];
 	      };
 
 	      // Clear canvas

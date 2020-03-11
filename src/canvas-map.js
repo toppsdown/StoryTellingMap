@@ -248,7 +248,7 @@ const CanvasMap=(props)=>{
           // Create a 1x1 canvas
           this.mapBuffer=createCanvas(1,1)
           this.mapBufferCtx=this.mapBuffer.getContext('2d',{alpha:false})
-          // update the map to match the height and width in state
+          // update the map buffer to match the height and width in state
           // height and width are set by the window size
           this.updateMapBufferSize()
           this.mapBufferCtx.fillStyle='white'
@@ -423,6 +423,21 @@ const CanvasMap=(props)=>{
         this.cameraSubdivisions,
         percent
       )
+    },
+    getCenterCoordinates(){
+      let centerRatio={
+        x:this.state.width>720?0.66:0.5,
+        y:0.1
+      }
+      let [width,height]=[
+        this.state.width,
+        this.state.height
+      ]
+      console.log('height: ' + this.state.height)
+      return {
+        x: (width*centerRatio.x),
+        y: (height*centerRatio.y),
+      }
     },
     getMapSliceAtPercent(percent){
       //quick fix bug #20
@@ -736,29 +751,36 @@ const CanvasMap=(props)=>{
         this.mapScale=buffer.mapScale
       }
       let drawMap=()=>{
-        checkForBufferUpdate()
+        // debugger
+        let center = this.getCenterCoordinates()
+        let img=this.map[0].map
+        this.ctx.drawImage(img,center.x,center.y)
 
-        if(!updatedBufferThisFrame){
-          let slice={
-            x:((mapSlice.x*this.mapScale)-this.mapBufferOffset.x)/this.mapBufferScale,
-            y:((mapSlice.y*this.mapScale)-this.mapBufferOffset.y)/this.mapBufferScale,
-            width:(mapSlice.width*this.mapScale)/this.mapBufferScale,
-            height:(mapSlice.height*this.mapScale)/this.mapBufferScale
-          }
-          let target={
-            x:0,y:0,
-            width:this.state.width,
-            height:this.state.height,
-          }
-          drawCanvasSlice(
-            this.ctx,
-            this.mapBuffer,
-            slice,
-            target
-          )
-        }else{
-          this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
-        }
+        // this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
+
+        // checkForBufferUpdate()
+
+        // if(!updatedBufferThisFrame){
+        //   let slice={
+        //     x:((mapSlice.x*this.mapScale)-this.mapBufferOffset.x)/this.mapBufferScale,
+        //     y:((mapSlice.y*this.mapScale)-this.mapBufferOffset.y)/this.mapBufferScale,
+        //     width:(mapSlice.width*this.mapScale)/this.mapBufferScale,
+        //     height:(mapSlice.height*this.mapScale)/this.mapBufferScale
+        //   }
+        //   let target={
+        //     x:0,y:0,
+        //     width:this.state.width,
+        //     height:this.state.height,
+        //   }
+        //   drawCanvasSlice(
+        //     this.ctx,
+        //     this.mapBuffer,
+        //     slice,
+        //     target
+        //   )
+        // }else{
+        //   this.ctx.drawImage(this.mapBuffer,Math.round(-this.mapBufferMargin/this.mapBufferScale),Math.round(-this.mapBufferMargin/this.mapBufferScale))
+        // }
       }
 
       let localToGlobal=(v)=>
@@ -793,10 +815,16 @@ const CanvasMap=(props)=>{
 
       let dpi=1//window.devicePixelRatio
 
+      // let canvasPos=(x,y)=>typeof x=='object'?
+      //   canvasPos(x.x,x.y):[
+      //     (x-mapSlice.x)*zoom,
+      //     (y-mapSlice.y)*zoom
+      //   ]
+
+      let center = this.getCenterCoordinates()
       let canvasPos=(x,y)=>typeof x=='object'?
         canvasPos(x.x,x.y):[
-          (x-mapSlice.x)*zoom,
-          (y-mapSlice.y)*zoom
+          (x + center.x), (y + center.y)
         ]
 
       // Clear canvas
