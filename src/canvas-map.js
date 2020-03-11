@@ -324,20 +324,18 @@ const CanvasMap=(props)=>{
       this.calculateSections()
       this.onScroll()
     },
-    getZoom(){
-      return this.getZoomAtPercent(this.state.pos)
-    },
-    getCameraPosAtPercent(percent){
-      return Path.getPointAtPercent(
-        this.cameraSubdivisions,
-        percent
-      )
-    },
     getCenterCoordinates(){
+      // let centerRatio={
+      //   x:this.state.width>720?0.66:0.5,
+      //   y:0.1
+      // }
+
       let centerRatio={
-        x:this.state.width>720?0.66:0.5,
-        y:0.1
+        x:0,
+        y:0
       }
+
+
       let [width,height]=[
         this.state.width,
         this.state.height
@@ -347,56 +345,6 @@ const CanvasMap=(props)=>{
         x: (width*centerRatio.x),
         y: (height*centerRatio.y),
       }
-    },
-    getMapSliceAtPercent(percent){
-      //quick fix bug #20
-      if(isNaN(percent)) percent=1
-      let cameraPos=this.getCameraPosAtPercent(percent)
-      let zoom=this.getZoomAtPercent(percent)
-      let [width,height]=[
-        this.state.width/zoom,
-        this.state.height/zoom
-      ]
-      let center={
-        x:this.state.width>720?0.66:0.5,
-        y:0.33
-      }
-      return {
-        x:(cameraPos.x-(width*center.x)),
-        y:(cameraPos.y-(height*center.y)),
-        width,
-        height,
-        zoom,
-        cameraPos
-      }
-    },
-    getPosAtPercent(percent){
-      return this.state.pos
-    },
-    getZoomAtPercent(percent){
-      let sectionIndex = this.state.sectionIndex
-      let pos = this.getPosAtPercent()
-
-      let section = this.sections[sectionIndex]
-      let nextSection = this.sections[clamp(sectionIndex+1,this.sections.length-1)]
-      let lastSection = this.sections[clamp(sectionIndex-1,0,this.sections.length-1)]
-
-      let getNumericAttr=(el,attr,def=1)=>{
-        let v=el.getAttribute(attr)
-        return (v==null)?def:parseFloat(v)
-      }
-      let getMiddleZoom=(section)=>getNumericAttr(section,'data-zoom-middle',getStartZoom(section))
-      let getStartZoom=(section)=>getNumericAttr(section,'data-zoom-start',1)
-
-      let zoom1 = pos<=0.5?getStartZoom(section):getMiddleZoom(section)
-      let zoom2 = pos<=0.5?getMiddleZoom(section):getStartZoom(nextSection)
-
-      return interpolate(
-        pos==1?1:((pos/0.5)-Math.floor(pos/0.5)),
-        zoom1,
-        zoom2,
-        easing.cubic.inOut
-      )
     },
     renderMap(){
       if(!this.ready) return
@@ -580,7 +528,7 @@ const CanvasMap=(props)=>{
         )
         this.ctx.strokeStyle='#FDFCEC'
         this.ctx.lineWidth=6
-        let pos=add(point,{x:20*inverseZoom,y:0})
+        let pos=add(point,{x:20,y:0})
         this.ctx.strokeText(point.label,...canvasPos(pos))
         this.ctx.fillText(point.label,...canvasPos(pos))
       }
@@ -642,17 +590,6 @@ const CanvasMap=(props)=>{
       let trailTip2=this.trailSubdivisions[clamp(trailTipIndex-1,this.trailSubdivisions.length-1)]
       let icon=this.sectionsIcons[sectionIndex]
 
-
-
-      let mapSlice=this.getMapSliceAtPercent(
-        interpolate(pos,cameraSegment.start,cameraSegment.end)/this.cameraLength
-      )
-      let zoom=mapSlice.zoom
-      let inverseZoom=1/zoom
-      let cameraPos=mapSlice.cameraPos
-
-      let dpi=1//window.devicePixelRatio
-
       // let canvasPos=(x,y)=>typeof x=='object'?
       //   canvasPos(x.x,x.y):[
       //     (x-mapSlice.x)*zoom,
@@ -668,6 +605,7 @@ const CanvasMap=(props)=>{
       // Clear canvas
       // this.ctx.clearRect(0,0,this.canvas.width*dpi,this.canvas.height*dpi)
       this.ctx.fillStyle='#fff'
+      let dpi=1//window.devicePixelRatio
       this.ctx.fillRect(0,0,this.canvas.width*dpi,this.canvas.height*dpi)
 
       drawMap()

@@ -9724,17 +9724,17 @@
 	      this.calculateSections();
 	      this.onScroll();
 	    },
-	    getZoom: function getZoom() {
-	      return this.getZoomAtPercent(this.state.pos);
-	    },
-	    getCameraPosAtPercent: function getCameraPosAtPercent(percent) {
-	      return Path.getPointAtPercent(this.cameraSubdivisions, percent);
-	    },
 	    getCenterCoordinates: function getCenterCoordinates() {
+	      // let centerRatio={
+	      //   x:this.state.width>720?0.66:0.5,
+	      //   y:0.1
+	      // }
+
 	      var centerRatio = {
-	        x: this.state.width > 720 ? 0.66 : 0.5,
-	        y: 0.1
+	        x: 0,
+	        y: 0
 	      };
+
 	      var _ref2 = [this.state.width, this.state.height],
 	          width = _ref2[0],
 	          height = _ref2[1];
@@ -9744,56 +9744,6 @@
 	        x: width * centerRatio.x,
 	        y: height * centerRatio.y
 	      };
-	    },
-	    getMapSliceAtPercent: function getMapSliceAtPercent(percent) {
-	      //quick fix bug #20
-	      if (isNaN(percent)) percent = 1;
-	      var cameraPos = this.getCameraPosAtPercent(percent);
-	      var zoom = this.getZoomAtPercent(percent);
-	      var width = this.state.width / zoom,
-	          height = this.state.height / zoom;
-
-	      var center = {
-	        x: this.state.width > 720 ? 0.66 : 0.5,
-	        y: 0.33
-	      };
-	      return {
-	        x: cameraPos.x - width * center.x,
-	        y: cameraPos.y - height * center.y,
-	        width: width,
-	        height: height,
-	        zoom: zoom,
-	        cameraPos: cameraPos
-	      };
-	    },
-	    getPosAtPercent: function getPosAtPercent(percent) {
-	      return this.state.pos;
-	    },
-	    getZoomAtPercent: function getZoomAtPercent(percent) {
-	      var sectionIndex = this.state.sectionIndex;
-	      var pos = this.getPosAtPercent();
-
-	      var section = this.sections[sectionIndex];
-	      var nextSection = this.sections[(0, _math.clamp)(sectionIndex + 1, this.sections.length - 1)];
-	      var lastSection = this.sections[(0, _math.clamp)(sectionIndex - 1, 0, this.sections.length - 1)];
-
-	      var getNumericAttr = function getNumericAttr(el, attr) {
-	        var def = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
-
-	        var v = el.getAttribute(attr);
-	        return v == null ? def : parseFloat(v);
-	      };
-	      var getMiddleZoom = function getMiddleZoom(section) {
-	        return getNumericAttr(section, 'data-zoom-middle', getStartZoom(section));
-	      };
-	      var getStartZoom = function getStartZoom(section) {
-	        return getNumericAttr(section, 'data-zoom-start', 1);
-	      };
-
-	      var zoom1 = pos <= 0.5 ? getStartZoom(section) : getMiddleZoom(section);
-	      var zoom2 = pos <= 0.5 ? getMiddleZoom(section) : getStartZoom(nextSection);
-
-	      return (0, _math.interpolate)(pos == 1 ? 1 : pos / 0.5 - Math.floor(pos / 0.5), zoom1, zoom2, _math.easing.cubic.inOut);
 	    },
 	    renderMap: function renderMap() {
 	      var _this4 = this;
@@ -9961,7 +9911,7 @@
 	        _this4.ctx.fillStyle = setByStatus(i, _this4.props.fontPastColor, _this4.props.fontPresentColor, _this4.props.fontFutureColor);
 	        _this4.ctx.strokeStyle = '#FDFCEC';
 	        _this4.ctx.lineWidth = 6;
-	        var pos = (0, _vector.add)(point, { x: 20 * inverseZoom, y: 0 });
+	        var pos = (0, _vector.add)(point, { x: 20, y: 0 });
 	        (_ctx5 = _this4.ctx).strokeText.apply(_ctx5, [point.label].concat(_toConsumableArray(canvasPos(pos))));
 	        (_ctx6 = _this4.ctx).fillText.apply(_ctx6, [point.label].concat(_toConsumableArray(canvasPos(pos))));
 	      };
@@ -10016,13 +9966,6 @@
 	      var trailTip2 = this.trailSubdivisions[(0, _math.clamp)(trailTipIndex - 1, this.trailSubdivisions.length - 1)];
 	      var icon = this.sectionsIcons[sectionIndex];
 
-	      var mapSlice = this.getMapSliceAtPercent((0, _math.interpolate)(pos, cameraSegment.start, cameraSegment.end) / this.cameraLength);
-	      var zoom = mapSlice.zoom;
-	      var inverseZoom = 1 / zoom;
-	      var cameraPos = mapSlice.cameraPos;
-
-	      var dpi = 1; //window.devicePixelRatio
-
 	      // let canvasPos=(x,y)=>typeof x=='object'?
 	      //   canvasPos(x.x,x.y):[
 	      //     (x-mapSlice.x)*zoom,
@@ -10037,6 +9980,7 @@
 	      // Clear canvas
 	      // this.ctx.clearRect(0,0,this.canvas.width*dpi,this.canvas.height*dpi)
 	      this.ctx.fillStyle = '#fff';
+	      var dpi = 1; //window.devicePixelRatio
 	      this.ctx.fillRect(0, 0, this.canvas.width * dpi, this.canvas.height * dpi);
 
 	      drawMap();
