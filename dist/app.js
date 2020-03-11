@@ -9443,9 +9443,6 @@
 	    ctx: null,
 
 	    map: null,
-	    mapScale: 1,
-	    mapScales: 2,
-	    mapMaxScale: 2.5,
 	    mapCache: null,
 	    mapSVG: null,
 	    mapWidth: null,
@@ -9608,26 +9605,15 @@
 	            _this.mapWidth = 2040;
 	            _this.mapHeight = 1178;
 	          }
-	          // This is generating multiple map renders at different scales
-	          _this.map = arrayNum(_this.mapScales).map(function (v, i) {
-	            // Map scale calculation
-	            // arrayNum creates an array with x number (2) of slots
-	            // for each slot in the array, (1.5/1) * 0,1 + 1
-	            // maxScale = 2.5
-	            // mapScales = 2
-	            // Output: [1, 2.5].
-	            // this is horribly convoluted, why even bother?
-	            var scale = 1 + (_this.mapMaxScale - 1) / (_this.mapScales - 1) * i;
+	          var map = (0, _createCanvas2.default)(_this.mapWidth, _this.mapHeight);
+	          var mapCtx = map.getContext('2d', { alpha: false });
+	          mapCtx.fillStyle = 'white';
+	          mapCtx.fillRect(0, 0, _this.mapWidth, _this.mapHeight);
 
-	            var map = (0, _createCanvas2.default)(_this.mapWidth * scale, _this.mapHeight * scale);
-	            var mapCtx = map.getContext('2d', { alpha: false });
-	            mapCtx.fillStyle = 'white';
-	            mapCtx.fillRect(0, 0, _this.mapWidth * scale, _this.mapHeight * scale);
+	          // Here is where the SVG map get's drawn
+	          mapCtx.drawImage(img, 0, 0, _this.mapWidth, _this.mapHeight);
 
-	            // Here is where the SVG map get's drawn
-	            mapCtx.drawImage(img, 0, 0, _this.mapWidth * scale, _this.mapHeight * scale);
-	            return { map: map, scale: scale };
-	          });
+	          _this.map = [{ map: map }];
 
 	          _this.ready = true;
 	          document.addEventListener('scroll', _this.onScroll.bind(_this));

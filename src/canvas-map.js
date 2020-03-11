@@ -48,9 +48,6 @@ const CanvasMap=(props)=>{
     ctx:null,
 
     map:null,
-    mapScale:1,
-    mapScales:2,
-    mapMaxScale:2.5,
     mapCache:null,
     mapSVG:null,
     mapWidth:null,
@@ -217,26 +214,15 @@ const CanvasMap=(props)=>{
             this.mapWidth=2040
             this.mapHeight=1178
           }
-          // This is generating multiple map renders at different scales
-          this.map=arrayNum(this.mapScales).map((v,i)=>{
-            // Map scale calculation
-            // arrayNum creates an array with x number (2) of slots
-            // for each slot in the array, (1.5/1) * 0,1 + 1
-            // maxScale = 2.5
-            // mapScales = 2
-            // Output: [1, 2.5].
-            // this is horribly convoluted, why even bother?
-            let scale=1+(((this.mapMaxScale-1)/(this.mapScales-1))*i)
+          let map=createCanvas(this.mapWidth,this.mapHeight)
+          let mapCtx=map.getContext('2d',{alpha:false})
+          mapCtx.fillStyle='white'
+          mapCtx.fillRect(0,0,this.mapWidth,this.mapHeight)
 
-            let map=createCanvas(this.mapWidth*scale,this.mapHeight*scale)
-            let mapCtx=map.getContext('2d',{alpha:false})
-            mapCtx.fillStyle='white'
-            mapCtx.fillRect(0,0,this.mapWidth*scale,this.mapHeight*scale)
+          // Here is where the SVG map get's drawn
+          mapCtx.drawImage(img,0,0,this.mapWidth,this.mapHeight)
 
-            // Here is where the SVG map get's drawn
-            mapCtx.drawImage(img,0,0,this.mapWidth*scale,this.mapHeight*scale)
-            return {map,scale}
-          })
+          this.map = [ {map} ]
 
           this.ready=true
           document.addEventListener('scroll',this.onScroll.bind(this))
